@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>{% block title %}{% endblock %}</title>
+		<!-- Included Google Nexus Tags -->
+		<meta name="description" content="A sidebar menu as seen on the Google Nexus 7 website" />
+		<meta name="keywords" content="google nexus 7 menu, css transitions, sidebar, side menu, slide out menu" />
+		<meta name="author" content="Codrops" />
+		<link rel="shortcut icon" href="../favicon.ico">
+    <link href="{{ url_for('static', filename='css/normalize.css') }}" rel="stylesheet" >
+    <link href="{{ url_for('static', filename='css/demo.css') }}" rel="stylesheet" >
+    <link href="{{ url_for('static', filename='css/component.css') }}" rel="stylesheet" >
+    <link href="{{ url_for('static', filename='css/content.css') }}" rel="stylesheet" >
+		<script src="js/modernizr.custom.js"></script>
+	</head>
+	<body>
+		<div class="container">
+			<ul id="gn-menu" class="gn-menu-main">
+				<li class="gn-trigger">
+					<a class="gn-icon gn-icon-menu"><span>Menu</span></a>
+					<nav class="gn-menu-wrapper">
+						<div class="gn-scroller">
+							<ul class="gn-menu">
+								<li class="gn-search-item">
+									<input placeholder="Search" type="search" class="gn-search">
+									<a class="gn-icon gn-icon-search"><span>Search</span></a>
+								</li>
+								<li>
+									<a class="gn-icon gn-icon-archive">END-POINTS</a>
+									<ul class="gn-submenu">
+										<li><a class="gn-icon gn-icon-article" href="{{url_for('homepage')}}"> Homepage </a></li>
+										<li><a class="gn-icon gn-icon-article" href="{{url_for('register')}}"> Register </a></li>
+										<li><a class="gn-icon gn-icon-article" href="{{url_for('login')}}"> Login </a></li>
+										<li><a class="gn-icon gn-icon-article" href="{{url_for('postcomment')}}"> Post Comment </a></li>
+										<li><a class="gn-icon gn-icon-article" href="{{url_for('comments')}}"> All Comments </a></li>
+									</ul>
+								</li>
+								<li><a class="gn-icon gn-icon-cog">Settings</a></li>
+								<li><a class="gn-icon gn-icon-help">Help</a></li>
+
+								</li>
+							</ul>
+						</div><!-- /gn-scroller -->
+					</nav>
+				</li>
+				<li><a href="#">Home</a></li>
+				<li><a class="codrops-icon codrops-icon-prev" href="https://andela.com/"><span>Andela Home</span></a></li>
+				<li><a class="codrops-icon codrops-icon-user" href="{{url_for('account')}}"><span> {{session['email']}}</span></a></li>
+			</ul>
+
+			{% block content %}
+
+	    {% endblock %}
+
+		</div><!-- /container -->
+		<script src="{{ url_for('static', filename='js/gnmenu.js') }}"></script>
+		<script src="{{ url_for('static', filename='js/classie.js') }}"></script>
+		<script>
+			new gnMenu( document.getElementById( 'gn-menu' ) );
+		</script>
+	</body>
+</html>

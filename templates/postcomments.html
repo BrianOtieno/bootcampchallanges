@@ -1,0 +1,24 @@
+{% extends "navigation.html" %}
+{% block content %}
+<header>
+  <h1>Comments <span>Drop a comment below :-) </span></h1>
+
+<form method="POST" action="/login">
+  {{ form.hidden_tag() }}
+
+
+  <div class="form-group">
+    {{ form.title.label }}
+    {{ form.title }}
+  </div>
+
+  <div class="form-group">
+    {{ form.comment.label }}
+    {{ form.comment(cols="150", rows="10") }}
+  </div>
+  {{ form.submit(class="btn-primary btn-ln") }}
+
+</form>
+<br />
+The comment you post here will be listed under comments. You can access this from the navigation pane under END-POINTS "All Comments"
+{% endblock %}
