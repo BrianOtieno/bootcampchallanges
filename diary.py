@@ -32,7 +32,7 @@ def register():
         version = request.get_json()["version"]
     else:
         version = default_api_version
-
+ 
     if version == 1:
 
         user_info = request.get_json()
