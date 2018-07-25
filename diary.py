@@ -32,7 +32,7 @@ def register():
         version = request.get_json()["version"]
     else:
         version = default_api_version
- 
+
     if version == 1:
 
         user_info = request.get_json()
@@ -107,8 +107,9 @@ def login():
             return jsonify({"message": "{} - Unauthorized: invalid \
             credenatials".format(401)})
 
+    # logic for the next API Version
+
     return jsonify({"message": "API Version specified unsuported!"})
-#return jsonify({"message": type(user_info)})
 
 @app.route("/api/v1/entries", methods=['GET','POST'])
 def entry():
@@ -153,9 +154,75 @@ def entry():
     if request.method =="GET":
         return jsonify({"message": "{} - OK : Entries : {}". \
         format(200, diary_info)})
-
     else:
         return jsonify({"message": "Version specified unsuported!"})
+
+@app.route("/api/v1/entry/<int:entry_id>", methods=['PUT','GET', 'DELETE'])
+def entry_actions(entry_id):
+
+    if request.method =="PUT":
+        # Assign the API version. Default to V1 or a specified higher
+        # Route can be set to /api/entry/<int : entry_id>
+        if request.get_json()["version"]:
+            version = request.get_json()["version"]
+        else:
+            version = default_api_version
+
+        if version == 1:
+
+            entry_id = entry_id
+            username = session.get('username')
+            entry = request.get_json()["entry"]
+            entry_date = datetime.datetime.now()
+            event_date = request.get_json()["event_date"]
+            notification_date = request.get_json()["notification_date"]
+
+            if diary_info[entry_id]:
+                if diary_info[entry_id]['username'] == username:
+                    diary_info.pop(diary_info[entry_id], None)
+
+                    diary_info[entry_id] = {"entry": entry,"entry date":
+                    entry_date,"Event Date": event_date, "username": username,
+                    "Notification Date": notification_date}
+
+                    return jsonify({"message": "{} - OK : Updated: {}" \
+                    .format(200, diary_info)})
+
+                return jsonify({"message": "{} - Unauthorized: No  \
+                privilages to update the entry".format(401)})
+
+            return jsonify({"message": "{} - Not Found: The entry  \
+            requested not found".format(404)})
+
+        # PUT logic for the next API Version
+
+        return jsonify({"message": "Version specified unsuported!"})
+
+    if request.method =="GET":
+        if diary_info[entry_id]:
+            if diary_info[entry_id]['username'] == username:
+                return jsonify({"message": "{} - OK : Entry requested: {}". \
+                format(200, diary_info)})
+
+            return jsonify({"message": "{} - You don't have privilages to \
+            view this entry".format(401)})
+
+        return jsonify({"message": "{} - Not Found: The entry requested \
+        not found".format(404)})
+
+    if request.method == "DELETE":
+        if diary_info[entry_id]:
+            if diary_info[entry_id]['username'] == username:
+                diary_info.pop(diary_info[entry_id], None)
+
+                return jsonify({"message": "{} - OK : Entry deleted: {}". \
+                format(200)})
+
+            return jsonify({"message": "{} - Unauthorized: No privilages \
+            to delete the entry".format(401)})
+
+        return jsonify({"message": "{} - Not Found: The entry requested \
+        not found".format(404)})
 
 
 if __name__=='__main__':
