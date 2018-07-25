@@ -224,6 +224,9 @@ def entry_actions(entry_id):
         return jsonify({"message": "{} - Not Found: The entry requested \
         not found".format(404)})
 
+@app.route("/logout")
+def logout():
+    session.pop('username', None)
 
 if __name__=='__main__':
     app.run(debug=True)
