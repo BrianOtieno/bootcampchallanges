@@ -129,7 +129,7 @@ def entry():
         notification_date = request.get_json()["notification_date"]
 
         #Generate unique entry id (username concatenated with curr date)
-        entry_id = username + str(entry_date)
+        entry_id = str(username) + str(entry_date)
 
         if username not in userdata:
             return jsonify({"message": "{} - Unauthorized: Login \
