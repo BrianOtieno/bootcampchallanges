@@ -1,9 +1,51 @@
 from flask import Flask,request, session, jsonify, json
-import re
-import datetime
+import re, random, psycopg2, datetime
+from werkzeug import generate_password_hash, check_password_hash
 
 app=Flask(__name__,static_url_path="")
 app.secret_key = "bootcamp-key"
+
+class DbConnection:
+    def __init__(self):
+        try:
+            print("############ GENERATING SCHEMA ##################")
+            self.connection = psycopg2.connect("dbname = 'andelabootcamp'\
+            user='postgres' host='localhost' password='5ure5t@re!' port='5432'")
+            self.connection.autocommit = True
+            self.cursor = self.connection.cursor()
+        except Exception as e:
+            print("############ FAILED TO GENERATE SCHEMA ##################")
+            return jsonify({"Error Message": e.message} )
+
+
+    def create_users_table(self):
+        print "==> Creating Users Table"
+        users_table_command = "CREATE TABLE IF NOT EXISTS users(\
+          uid serial PRIMARY KEY,\
+          firstname VARCHAR(50) not null,\
+          lastname VARCHAR(50) not null,\
+          email VARCHAR(100) not null unique,\
+          username VARCHAR(100) not null unique,\
+          password VARCHAR(128) not null \
+        )"
+        self.cursor.execute(users_table_command)
+        print "==> Created Users Table successfully"
+
+    def create_diary_table(self):
+        print "==> Creating Diaries Table"
+        diary_table_command = "CREATE TABLE IF NOT EXISTS diary(\
+          did serial PRIMARY KEY,\
+          username VARCHAR(100) not null,\
+          entry TEXT,\
+          event_date DATE, \
+          entry_date DATE,\
+          notification_date DATE,\
+          FOREIGN KEY (username) REFERENCES users(username)\
+          ON UPDATE CASCADE ON DELETE RESTRICT\
+        )"
+        self.cursor.execute(diary_table_command)
+        print "==> Diaries Table Created successfully"
+
 
 #Define Default Version
 default_api_version = 1
@@ -11,6 +53,12 @@ default_api_version = 1
 diary_info = {}
 userdata = {}
 home_data = {}
+
+#Connection To DB for CRUD
+conn = psycopg2.connect("dbname = 'andelabootcamp'\
+user='postgres' host='localhost' password='5ure5t@re!' port='5432'")
+conn.autocommit = True
+cur = conn.cursor()
 
 
 @app.route("/api", methods=["GET"])
@@ -41,8 +89,9 @@ def register():
         email = user_info["email"]
         username = user_info["username"]
         password = user_info["password"]
+        #password = generate_password_hash(user_info["password"])
+        #confirm_password = generate_password_hash(user_info["confirm_password"])
         confirm_password = user_info["confirm_password"]
-
 
         if not firstname or not lastname or not email or not username or not \
         password or not confirm_password:
@@ -53,9 +102,9 @@ def register():
             return jsonify({"message": "Error {} - Precondition Failed  :\
             Password and Confirm password not matching". format(412)})
 
-        elif username in userdata:
-            return jsonify({"message": "Error {} - Conflict  : User already \
-            registered". format(409)})
+        # elif username in userdata:
+        #     return jsonify({"message": "Error {} - Conflict  : User already \
+        #     registered". format(409)})
 
         if not re.match(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$",
         email):
@@ -63,12 +112,17 @@ def register():
             be valid".format(417)})
 
         else:
-            userdata[username] = {"first name": firstname,
-            "last name": lastname, "email": email, "username": username,
-            "password": password,"confirm_password": confirm_password}
+            try:
+                cur.execute("INSERT INTO users(firstname, lastname, email,\
+                username, password) VALUES('{}','{}','{}','{}','{}')".format(
+                firstname, lastname, email, username, password
+                ))
+                return jsonify({"message": "User Registered Users"}),200
 
-            return jsonify({"message": "{} - OK : Registered Users: {}". \
-            format(200, userdata)})
+            except Exception as e:
+                return jsonify({"message": "Database error: {}".format(
+                e.message
+                )}),200
 
     return jsonify({"message": "API Version specified unsuported!"})
 
@@ -88,24 +142,21 @@ def login():
         password = user_info["password"]
 
         if not password or not username:
-            return jsonify({"message": "Error {} - Length Required : Both \
-            fields are required". format(411)})
+            return jsonify({"message": "Error : Length Required : Both \
+            fields are required"}), 411
 
-        elif username not in userdata:
+        cur.execute("SELECT username FROM users \
+        WHERE username='{}' AND password='{}'".format(username, password))
+
+        query_result = cur.fetchone()
+
+        if not query_result:
             #keep them guesing which is invalid - for security
-            return jsonify({"message": "{} - Unauthorized: Either username \
-            or password not valid".format(401)})
+            return jsonify({"message": "Unauthorized: Either username \
+            or password not valid"}),401
+        session['username'] = username
+        return jsonify({"message":"Login successfull"}),200
 
-        elif username in userdata and \
-        password == userdata[username]["password"]:
-            session["username"] = username
-            session["logged_in"] = True
-            return jsonify({"message": "{} - OK: Logged in successfully". \
-            format(200)})
-
-        else:
-            return jsonify({"message": "{} - Unauthorized: invalid \
-            credenatials".format(401)})
 
     # logic for the next API Version
 
@@ -129,9 +180,9 @@ def entry():
         notification_date = request.get_json()["notification_date"]
 
         #Generate unique entry id (username concatenated with curr date)
-        entry_id = str(username) + str(entry_date)
+        #entry_id = str(username) + str(entry_date)
 
-        if username not in userdata:
+        if username not in session['username']:
             return jsonify({"message": "{} - Unauthorized: Login \
             required".format(401)})
 
@@ -139,27 +190,25 @@ def entry():
             return jsonify({"message": "Error {} - Length Required : All \
             fields are mandatory". format(411)})
 
-        elif entry_id in diary_info:
-            return jsonify({"message": "Error {} - Conflict  : This entry \
-            already exist". format(409)})
-
         else:
-            diary_info[entry_id] = {"entry": entry,"entry date": entry_date,
-            "Event Date": event_date, "username": username,
-            "Notification Date": notification_date}
-
-            return jsonify({"message": "{} - OK : Entry Posted: {}". \
-            format(200, diary_info)})
+            cur.execute("INSERT INTO diary(username, entry, event_date,\
+            entry_date, notification_date) VALUES('{}','{}','{}','{}','{}')".format(
+            username, entry, event_date, entry_date, notification_date
+            ))
+            return jsonify({"message": "Entry inserted!"}),200
 
     if request.method =="GET":
-        return jsonify({"message": "{} - OK : Entries : {}". \
-        format(200, diary_info)})
+        cur.execute("SELECT * FROM diary")
+        query_result = cur.fetchall()
+        if not query_result:
+            return jsonify({"message": "Entries not found"}),404
+        return jsonify(query_result),200
     else:
         return jsonify({"message": "Version specified unsuported!"})
 
 @app.route("/api/v1/entry/<int:entry_id>", methods=['PUT','GET', 'DELETE'])
 def entry_actions(entry_id):
-
+    entry_id = entry_id
     if request.method =="PUT":
         # Assign the API version. Default to V1 or a specified higher
         # Route can be set to /api/entry/<int : entry_id>
@@ -169,27 +218,22 @@ def entry_actions(entry_id):
             version = default_api_version
 
         if version == 1:
-
-            entry_id = entry_id
             username = session.get('username')
             entry = request.get_json()["entry"]
             entry_date = datetime.datetime.now()
             event_date = request.get_json()["event_date"]
             notification_date = request.get_json()["notification_date"]
 
-            if diary_info[entry_id]:
-                if diary_info[entry_id]['username'] == username:
-                    diary_info.pop(diary_info[entry_id], None)
 
-                    diary_info[entry_id] = {"entry": entry,"entry date":
-                    entry_date,"Event Date": event_date, "username": username,
-                    "Notification Date": notification_date}
-
-                    return jsonify({"message": "{} - OK : Updated: {}" \
-                    .format(200, diary_info)})
-
-                return jsonify({"message": "{} - Unauthorized: No  \
-                privilages to update the entry".format(401)})
+            try:
+                cur.execute("UPDATE diary  SET username = '{}', \
+                entry = '{}', entry_date = '{}', event_date = '{}',\
+                notification_date = '{}' WHERE did = {}".format(
+                username, entry, entry_date, event_date, notification_date,
+                entry_id ))
+                return jsonify({"message": "Entry Updated!"}),200
+            except Exception as e:
+                return jsonify({"Error Message": e.message} )
 
             return jsonify({"message": "{} - Not Found: The entry  \
             requested not found".format(404)})
@@ -199,34 +243,26 @@ def entry_actions(entry_id):
         return jsonify({"message": "Version specified unsuported!"})
 
     if request.method =="GET":
-        if diary_info[entry_id]:
-            if diary_info[entry_id]['username'] == username:
-                return jsonify({"message": "{} - OK : Entry requested: {}". \
-                format(200, diary_info)})
-
-            return jsonify({"message": "{} - You don't have privilages to \
-            view this entry".format(401)})
-
-        return jsonify({"message": "{} - Not Found: The entry requested \
-        not found".format(404)})
+        cur.execute("SELECT * FROM diary WHERE did = {}".format(entry_id))
+        query_result = cur.fetchall()
+        if not query_result:
+            return jsonify({"message": "Entries not found"}),404
+        return jsonify(query_result),200
 
     if request.method == "DELETE":
-        if diary_info[entry_id]:
-            if diary_info[entry_id]['username'] == username:
-                diary_info.pop(diary_info[entry_id], None)
+        try:
+            cur.execute("DELETE FROM diary WHERE did = {}".format(entry_id))
+            return jsonify({"message": "Entry Deleted"}),200
+        except:
+            return jsonify({"message": "Entries not found"}),404
 
-                return jsonify({"message": "{} - OK : Entry deleted: {}". \
-                format(200)})
-
-            return jsonify({"message": "{} - Unauthorized: No privilages \
-            to delete the entry".format(401)})
-
-        return jsonify({"message": "{} - Not Found: The entry requested \
-        not found".format(404)})
-
-@app.route("/logout")
+@app.route("/api/logout", methods=['POST'])
 def logout():
     session.pop('username', None)
+    return jsonify({"message": "{} - lOgged out".format(200)})
 
 if __name__=='__main__':
+    connection_to_database = DbConnection()
+    connection_to_database.create_users_table()
+    connection_to_database.create_diary_table()
     app.run(debug=True)

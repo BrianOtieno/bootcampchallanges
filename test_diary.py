@@ -42,15 +42,6 @@ class DiaryTestCase(unittest.TestCase):
         expected_response = {}
         self.assertEqual(expected_response, {})
 
-        response = self.app.post('/api/v1/entries', json={
-        	"username": "Otieno",
-        	"entry": "Some entry",
-        	"entry_date": "2018/7/25",
-        	"event_date" : "2018/10/10",
-        	"notification_date" : "2018/10/9",
-        	"version" : 1})
-        expected = "200 OK"
-        self.assertEqual(expected, response.status)
 
     def test_entry(self):
         pass
