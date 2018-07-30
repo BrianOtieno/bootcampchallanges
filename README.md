@@ -8,5 +8,7 @@ Run the diary.py file. This will generare the schema
 Run the test_diary file
 
 # BADGES
-
+Travis
 [![Build Status](https://travis-ci.org/BrianOtieno/bootcampchallanges.svg?branch=challange3)](https://travis-ci.org/BrianOtieno/bootcampchallanges)
+Coveralls
+[![Coverage Status](https://coveralls.io/repos/github/BrianOtieno/bootcampchallanges/badge.svg?branch=challange2)](https://coveralls.io/github/BrianOtieno/bootcampchallanges?branch=challange2)
