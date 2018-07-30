@@ -1,8 +1,16 @@
 language: python
 python:
   - "2.7"
+  - "3.4"
 cache: pip
 install:
   - pip install -r requirements.txt
+before_script:
+  createdb andelabootcamp
 script:
-  - python test_diary.py
+  - python test_diary.py --cov-report term-missing --cov=app
+
+after_success:
+  -coveralls
+  -codeClimate
+ 
