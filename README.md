@@ -6,3 +6,7 @@ Run the diary.py file. This will generare the schema
 
 # Testing
 Run the test_diary file
+
+# BADGES
+
+[![Build Status](https://travis-ci.org/BrianOtieno/bootcampchallanges.svg?branch=challange3)](https://travis-ci.org/BrianOtieno/bootcampchallanges)
