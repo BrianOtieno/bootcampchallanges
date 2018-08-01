@@ -33,7 +33,3 @@ virtualenv==16.0.0
 Werkzeug==0.14.1
 wrapt==1.10.11
 WTForms==2.2.1
-<<<<<<< HEAD
-=======
-
->>>>>>> a901d8d62662b9b421d8cd8cd7e123e46363eb36
