@@ -312,7 +312,7 @@ def entry_actions(user, entry_id):
 @app.route("/api/logout", methods=['POST'])
 def logout():
     session.pop('username', None)
-    return jsonify({"message": "You're now logged out"),200
+    return jsonify({"message": "You're now logged out"}),200
 
 app.config.from_object(app_config[os.getenv('APP_SETTINGS')])
 
