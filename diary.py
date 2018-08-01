@@ -74,7 +74,7 @@ class DbConnection:
         print ("==> Created Users Table successfully")
 
     def create_diary_table(self):
-        print "==> Creating Diaries Table"
+        print ("==> Creating Diaries Table")
         diary_table_command = "CREATE TABLE IF NOT EXISTS diary(\
           did serial PRIMARY KEY,\
           username VARCHAR(100) not null,\
