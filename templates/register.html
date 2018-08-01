@@ -1,0 +1,71 @@
+{% extends "general.html" %}
+{% block content %}
+<div class="pushsignup"> <div>
+<main class="account">
+    <h2>Register To AndelaLevelUp</h2>
+<form method="POST" action="/register">
+  {{ form.hidden_tag() }}
+
+  {% for field, errors in form.errors.iteritems() %}
+    <div class="error-msg">
+  {{ form[field].label }}: {{ ', '.join(errors) }}
+    </div>
+{% endfor %}
+
+
+  <div class="form-group">
+    {{ form.firstname.label }}
+    {% if form.firstname.errors %}
+      {% for error in form.firstname.error %}
+          <p class="error-msg"> {{error}} </p>
+      {% endfor %}
+    {% endif %}
+    {{ form.firstname }}
+  </div>
+
+  <div class="form-group">
+    {{ form.lastname.label }}
+    {% if form.lastname.errors %}
+      {% for error in form.lastname.errros %}
+          <p class="error-msg"> {{error}} </p>
+      {% endfor %}
+    {% endif %}
+    {{ form.lastname }}
+  </div>
+  <div class="form-group">
+    {{ form.phonenumber.label }}
+    {% if form.phonenumber.errors %}
+      {% for error in form.phonenumber.errros %}
+          <p class="error-msg"> {{error}} </p>
+      {% endfor %}
+    {% endif %}
+    {{ form.phonenumber }}
+  </div>
+  <div class="form-group">
+    {{ form.email.label }}
+    {% if form.email.errors %}
+      {% for error in form.email.errros %}
+          <p class="error-msg"> {{error}} </p>
+      {% endfor %}
+    {% endif %}
+    {{ form.email }}
+  </div>
+  <div class="form-group">
+    {{ form.password.label }}
+      {% if form.password.errors %}
+        {% for error in form.password.errros %}
+          <p class="error-msg"> {{error}} </p>
+        {% endfor %}
+    {% endif %}
+    {{ form.password }}
+  </div>
+
+  {{ form.registerbtn(class="btn-blue") }}
+
+</form>
+<br />
+Already have an account?
+<a href="{{url_for('login')}}" class="btn-grey"> Sign In </a>
+
+</main>
+{% endblock %}

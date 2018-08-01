@@ -1,0 +1,79 @@
+.pushlogin{
+  margin-top: 15%;
+}
+.pushsignup{
+  margin-top: 5%;
+}
+
+.account {
+  width: 1000px;
+  margin: 0 auto;
+}
+
+.btn-blue {
+  background: orange;
+  border: 1px solid #1266f1;
+  color: #000000;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.23px;
+  padding: 12px 32px;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.btn-grey {
+  background: #ffffff;
+  color: orange;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.23px;
+  padding: 12px 32px;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  color: #3a3a3a;
+  display: block;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.form-group input {
+  border: none;
+  border-bottom: 2px solid orange;
+  border-left: 2px solid orange;
+  background-color: transparent;
+  color: #222222;
+  font-size: 18px;
+  padding: 5px 0;
+  width: 100%;
+}
+
+.form-group input:focus {
+  outline: 0;
+}
+
+.form-group .error-msg {
+  margin: 10px 0;
+  color: #db4437;
+}
+
+.form-group .error-msg + input {
+  border-bottom: 2px solid #db4437;
+}
+
+.error-msg {
+  color: #db4437;
+}

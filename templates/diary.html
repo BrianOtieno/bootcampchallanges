@@ -1,0 +1,29 @@
+{% extends "navigation.html" %}
+{% block content %}
+<header>
+  <h1>Events <span>Schedule an event </span></h1>
+
+<form method="POST" action="/diary">
+  {{ form.hidden_tag() }}
+
+
+  <div class="form-group">
+    {{ form.eventname.label }}
+    {{ form.eventname }}
+  </div>
+
+  <div class="form-group">
+    {{ form.event.label }}
+    {% if form.event.comment %}
+      {% for error in form.event.errros %}
+          <p class="error-message"> {{error}} </p>
+      {% endfor %}
+    {% endif %}
+    {{ form.event(cols="150", rows="10") }}
+  </div>
+  {{ form.submit(class="btn-primary btn-ln") }}
+
+</form>
+<br />
+The event will be populated on the navigation pane under END-POINTS "All Comments"
+{% endblock %}
