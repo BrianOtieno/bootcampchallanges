@@ -8,10 +8,10 @@ import os
 from instance.config import app_config
 
 app=Flask(__name__,static_url_path="", instance_relative_config=True)
-app.config['SECRET_KEY'] = "bootcamp-key"
+# #app.config['SECRET_KEY'] = "bootcamp-key"
 config_name = os.getenv('APP_SETTINGS')
 app.config.from_pyfile('config.py')
-app.config.from_object(app_config[os.getenv('APP_SETTINGS')])
+# app.config.from_object(app_config[os.getenv('APP_SETTINGS')])
 
 
 #Connection To DB for CRUD
@@ -314,10 +314,10 @@ def logout():
     session.pop('username', None)
     return jsonify({"message": "You're now logged out"}),200
 
-app.config.from_object(app_config[os.getenv('APP_SETTINGS')])
+    #app.config.from_object(app_config[os.getenv('APP_SETTINGS')])
 
 if __name__=='__main__':
     connection_to_database = DbConnection()
     connection_to_database.create_users_table()
     connection_to_database.create_diary_table()
-    app.run()
+    app.run(debug=True)
