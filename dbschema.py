@@ -12,7 +12,8 @@ class SchemaGeneration:
         try:
             print("############ GENERATING SCHEMA ##################")
             self.connection = psycopg2.connect("dbname = 'andelabootcamp'\
-            user='postgres' host='localhost' password='5ure5t@re!' port='5432'")
+            user='postgres' host='localhost'\
+             password='5ure5t@re!' port='5432'")
             self.connection.autocommit = True
             self.cursor = self.connection.cursor()
         except Exception as e:
@@ -21,7 +22,7 @@ class SchemaGeneration:
 
 
     def create_users_table(self):
-        print "==> Creating Users Table"
+        print ("==> Creating Users Table")
         users_table_command = "CREATE TABLE IF NOT EXISTS users(\
           uid serial PRIMARY KEY,\
           firstname VARCHAR(50) not null,\
@@ -32,7 +33,7 @@ class SchemaGeneration:
           public_id VARCHAR(128)\
         )"
         self.cursor.execute(users_table_command)
-        print "==> Created Users Table successfully"
+        print ("==> Created Users Table successfully")
 
     def create_diary_table(self):
         print "==> Creating Diaries Table"
@@ -47,7 +48,7 @@ class SchemaGeneration:
           ON UPDATE CASCADE ON DELETE RESTRICT\
         )"
         self.cursor.execute(diary_table_command)
-        print "==> Diaries Table Created successfully"
+        print ("==> Diaries Table Created successfully")
 
 class DiryTable():
     def __init__(self, username, entry, event, event_date, notification_date,
@@ -89,38 +90,3 @@ class Registration(SchemaGeneration):
             return True
         except Exception as e:
             return jsonify({"Error Message": e.message} )
-
-    def user_update(id, self,firstname, lastname, email,username,
-    password,public_id):
-
-        cur = conn.cursor()
-        cur.execute("UPDATE users SET username = %s,email = %s,name = %s,password = %s WHERE id = %s",
-                    (username, email, name, password, id))
-        conn.commit()
-
-        return {'message': 'user updated'}
-
-    @staticmethod
-    def get_all_users():
-        cur = conn.cursor()
-        cur.execute("SELECT id, name, email, password, username,public_id from users")
-        rows = cur.fetchall()
-        output = []
-
-        for row in rows:
-            user_data = {'id': row[0], 'name': row[1], 'email': row[2], 'password': row[3], 'username': row[4],
-                         'public_id': row[5]}
-            output.append(user_data)
-
-        return {'users': output}
-
-    @staticmethod
-    def get_one(id):
-        cur = conn.cursor()
-        cur.execute("SELECT id, name, email, password, username,public_id from users WHERE id = %s", id)
-        row = cur.fetchone()
-
-        user_data = {'id': row[0], 'name': row[1], 'email': row[2], 'password': row[3], 'username': row[4],
-                     'public_id': row[5]}
-
-        return {'user': user_data}
