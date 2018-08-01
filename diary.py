@@ -2,21 +2,23 @@ from flask import Flask,request, session, jsonify, json
 import re, random, psycopg2, datetime, uuid
 from werkzeug import generate_password_hash, check_password_hash
 from functools import wraps
-import jwt
+import jwt, os
 from dbschema import Registration
-import os
 from instance.config import app_config
 
 app=Flask(__name__,static_url_path="", instance_relative_config=True)
-# #app.config['SECRET_KEY'] = "bootcamp-key"
-config_name = os.getenv('APP_SETTINGS')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config.from_pyfile('config.py')
-# app.config.from_object(app_config[os.getenv('APP_SETTINGS')])
 
 
 #Connection To DB for CRUD
-conn = psycopg2.connect("dbname = 'andelabootcamp'\
-user='postgres' host='localhost' password='5ure5t@re!' port='5432'")
+dbname = os.getenv('DB_NAME')
+host = os.getenv('DB_HOST')
+user = os.getenv('DB_USER')
+password = os.getenv('DB_PASSWORD')
+port = os.getenv('DB_PORT')
+conn = psycopg2.connect("dbname = {} user={} host={} \
+password={} port={}".format(dbname, user, host, password, port))
 conn.autocommit = True
 cur = conn.cursor()
 
@@ -314,10 +316,10 @@ def logout():
     session.pop('username', None)
     return jsonify({"message": "You're now logged out"}),200
 
-    #app.config.from_object(app_config[os.getenv('APP_SETTINGS')])
+app.config.from_object(app_config[os.getenv('APP_SETTINGS')])
 
 if __name__=='__main__':
     connection_to_database = DbConnection()
     connection_to_database.create_users_table()
     connection_to_database.create_diary_table()
-    app.run(debug=True)
+    app.run()
