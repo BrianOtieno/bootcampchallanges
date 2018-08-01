@@ -10,7 +10,10 @@ Install modules in the requirements.txt file
 Run the diary.py file. This will generate the relations necessary in the setting up of the database.
 
 # Testing
-The test file is test_diary. The command below runs the test:
+The test file is test_diary.
+
+The command below runs the test:
+
 Test run command: python -m unit test test_diary
 
 # BADGES
