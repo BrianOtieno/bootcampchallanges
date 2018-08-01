@@ -60,7 +60,7 @@ class DbConnection:
 
 
     def create_users_table(self):
-        print "==> Creating Users Table"
+        print ("==> Creating Users Table")
         users_table_command = "CREATE TABLE IF NOT EXISTS users(\
           uid serial PRIMARY KEY,\
           firstname VARCHAR(50) not null,\
@@ -71,7 +71,7 @@ class DbConnection:
           public_id VARCHAR(128)\
         )"
         self.cursor.execute(users_table_command)
-        print "==> Created Users Table successfully"
+        print ("==> Created Users Table successfully")
 
     def create_diary_table(self):
         print "==> Creating Diaries Table"
@@ -86,7 +86,7 @@ class DbConnection:
           ON UPDATE CASCADE ON DELETE RESTRICT\
         )"
         self.cursor.execute(diary_table_command)
-        print "==> Diaries Table Created successfully"
+        print ("==> Diaries Table Created successfully")
 
 
 #Define Default Version
