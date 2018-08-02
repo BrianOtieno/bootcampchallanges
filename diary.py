@@ -10,12 +10,19 @@ app=Flask(__name__,static_url_path="", instance_relative_config=True)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config.from_pyfile('config.py')
 
-#Connection To DB for CRUD
+#Connection To DB for CRUD For Heroku
 dbname = os.getenv('DB_NAME')
 host = os.getenv('DB_HOST')
 user = os.getenv('DB_USER')
 password = os.getenv('DB_PASSWORD')
 port = os.getenv('DB_PORT')
+
+#Connection To DB for CRUD For Heroku
+dbname = "andelabootcamp"
+host = "localhost"
+user = "postgres"
+password = "5ure5t@re!"
+port = "5432"
 conn = psycopg2.connect("dbname = {} user={} host={} \
 password={} port={}".format(dbname, user, host, password, port))
 conn.autocommit = True
