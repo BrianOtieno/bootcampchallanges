@@ -8,7 +8,7 @@ before_script:
   createdb andelabootcamp
 script:
   - pytest
-  - pytest --cov=diary.py
+  - pytest --cov=.
 
 after_success:
   -coveralls
