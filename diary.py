@@ -10,7 +10,6 @@ app=Flask(__name__,static_url_path="", instance_relative_config=True)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config.from_pyfile('config.py')
 
-
 #Connection To DB for CRUD
 dbname = os.getenv('DB_NAME')
 host = os.getenv('DB_HOST')
