@@ -133,17 +133,30 @@ def register():
         email = user_info["email"]
         username = user_info["username"]
         password = user_info["password"]
-
         confirm_password = user_info["confirm_password"]
 
         if not firstname or not lastname or not email or not username or not \
         password or not confirm_password:
-            return jsonify({"message": "Error {} - Length Required : All \
-            fields are mandatory". format(411)})
+            return jsonify({"message": "All fields required"}),411
+
+        if not firstname.isalpha():
+            return jsonify({"message" : "invalid firstname"}),422
+        elif not lastname.isalpha():
+            return jsonify({"message" : "invalid lastname"}),422
+
+        if len(firstname) < 2 or len(lastname) < 2:
+            return jsonify({"message" : "Initials not allowed"}),422
+        if len(password) < 6:
+            return jsonify({"message" : "Passwords must be atleast six "
+            "characters"}),422
 
         elif password != confirm_password:
-            return jsonify({"message": "Error {} - Precondition Failed  :\
-            Password and Confirm password not matching". format(412)})
+            return jsonify({"message": "Passwords not matching"}),412
+
+        elif firstname.strip() == '' or lastname.strip() == '' or \
+        email.strip() == '' or username.strip() == '' or \
+        password.strip() == '':
+            return jsonify({"message" : "fields cannot be empty"}),422
 
         # elif username in userdata:
         #     return jsonify({"message": "Error {} - Conflict  : User already \
@@ -169,12 +182,10 @@ def register():
              VALUES('{}','{}','{}','{}','{}', '{}')".format(
             firstname, lastname, email, username, password, public_id
             ))
-            return jsonify({"message": "User Registered Users"}),200
+            return jsonify({"message": "User Registered"}),200
 
         except Exception as e:
-            return jsonify({"message": "Database error: {}".format(
-            e.message
-            )}),200
+            return jsonify({"message": "User Existing"}),200
 
     return jsonify({"message": "API Version specified unsuported!"})
 
@@ -243,19 +254,20 @@ def entry(user):
         #entry_id = str(username) + str(entry_date)
 
         if username not in session['username']:
-            return jsonify({"message": "{} - Unauthorized: Login \
-            required".format(401)})
+            return jsonify({"message": "Login required"}),401
 
         elif not entry or not event_date or not notification_date:
-            return jsonify({"message": "Error {} - Length Required : All \
-            fields are mandatory". format(411)})
+            return jsonify({"message": "All fields required!"})
 
         else:
-            cur.execute("INSERT INTO diary(username, entry, event_date,\
-            entry_date, notification_date) VALUES('{}','{}','{}',\
-            '{}','{}')".format(username, entry, event_date, entry_date,
-             notification_date))
-            return jsonify({"message": "Entry inserted!"}),200
+            try:
+                cur.execute("INSERT INTO diary(username, entry, event_date,\
+                entry_date, notification_date) VALUES('{}','{}','{}',\
+                '{}','{}')".format(username, entry, event_date, entry_date,
+                 notification_date))
+                return jsonify({"message": "Entry inserted!"}),200
+            except:
+                return jsonify({"message": "Failed to add entry!"}),200
 
     if request.method =="GET":
         cur.execute("SELECT * FROM diary")
@@ -270,6 +282,8 @@ def entry(user):
 @token_required
 def entry_actions(user, entry_id):
     entry_id = entry_id
+    if not isinstance(entry_id, int):
+        return jsonify({"message": "Id must be an int"})
     if request.method =="PUT":
         # Assign the API version. Default to V1 or a specified higher
         # Route can be set to /api/entry/<int : entry_id>
@@ -294,10 +308,9 @@ def entry_actions(user, entry_id):
                 entry_id ))
                 return jsonify({"message": "Entry Updated!"}),200
             except Exception as e:
-                return jsonify({"Error Message": e.message} )
+                return jsonify({"Error Message": "Check if entry exists"})
 
-            return jsonify({"message": "{} - Not Found: The entry  \
-            requested not found".format(404)})
+            return jsonify({"message": "Entry not found"})
 
         # PUT logic for the next API Version
 
@@ -307,7 +320,7 @@ def entry_actions(user, entry_id):
         cur.execute("SELECT * FROM diary WHERE did = {}".format(entry_id))
         query_result = cur.fetchall()
         if not query_result:
-            return jsonify({"message": "Entries not found"}),404
+            return jsonify({"message": "Entry not found"}),404
         return jsonify(query_result),200
 
     if request.method == "DELETE":
@@ -315,7 +328,7 @@ def entry_actions(user, entry_id):
             cur.execute("DELETE FROM diary WHERE did = {}".format(entry_id))
             return jsonify({"message": "Entry Deleted"}),200
         except:
-            return jsonify({"message": "Entries not found"}),404
+            return jsonify({"message": "Entries not found"}),204
 
 @app.route("/api/logout", methods=['POST'])
 def logout():
