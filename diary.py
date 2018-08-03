@@ -1,16 +1,65 @@
 from flask import Flask,request, session, jsonify, json
-import re, random, psycopg2, datetime
+import re, random, psycopg2, datetime, uuid
 from werkzeug import generate_password_hash, check_password_hash
+from functools import wraps
+import jwt, os
+from dbschema import Registration
+from instance.config import app_config
 
-app=Flask(__name__,static_url_path="")
-app.secret_key = "bootcamp-key"
+app=Flask(__name__,static_url_path="", instance_relative_config=True)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+app.config.from_pyfile('config.py')
+
+#Connection To DB for CRUD For Heroku
+dbname = os.getenv('DB_NAME')
+host = os.getenv('DB_HOST')
+user = os.getenv('DB_USER')
+password = os.getenv('DB_PASSWORD')
+port = os.getenv('DB_PORT')
+
+#Connection To DB for CRUD For Heroku
+dbname = "andelabootcamp"
+host = "localhost"
+user = "postgres"
+password = "5ure5t@re!"
+port = "5432"
+conn = psycopg2.connect("dbname = {} user={} host={} \
+password={} port={}".format(dbname, user, host, password, port))
+conn.autocommit = True
+cur = conn.cursor()
+
+cur = conn.cursor()
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+
+        if 'x-access-token' in request.headers:
+            token = request.headers['x-access-token']
+
+        if not token:
+            return jsonify({'message' : 'Token is missing!'}), 401
+
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+
+            cur.execute("SELECT * FROM users WHERE public_id = %s",[data['public_id']])
+            user = cur.fetchone()
+        except:
+            return jsonify({'message' : 'Token is invalid!'}), 401
+
+        return f(user, *args, **kwargs)
+
+    return decorated
+
 
 class DbConnection:
     def __init__(self):
         try:
             print("############ GENERATING SCHEMA ##################")
             self.connection = psycopg2.connect("dbname = 'andelabootcamp'\
-            user='postgres' host='localhost' password='5ure5t@re!' port='5432'")
+            user='postgres' host='localhost' password='5ure5t@re!'\
+             port='5432'")
             self.connection.autocommit = True
             self.cursor = self.connection.cursor()
         except Exception as e:
@@ -19,20 +68,21 @@ class DbConnection:
 
 
     def create_users_table(self):
-        print "==> Creating Users Table"
+        print ("==> Creating Users Table")
         users_table_command = "CREATE TABLE IF NOT EXISTS users(\
           uid serial PRIMARY KEY,\
           firstname VARCHAR(50) not null,\
           lastname VARCHAR(50) not null,\
           email VARCHAR(100) not null unique,\
           username VARCHAR(100) not null unique,\
-          password VARCHAR(128) not null \
+          password VARCHAR(128) not null,\
+          public_id VARCHAR(128)\
         )"
         self.cursor.execute(users_table_command)
-        print "==> Created Users Table successfully"
+        print ("==> Created Users Table successfully")
 
     def create_diary_table(self):
-        print "==> Creating Diaries Table"
+        print ("==> Creating Diaries Table")
         diary_table_command = "CREATE TABLE IF NOT EXISTS diary(\
           did serial PRIMARY KEY,\
           username VARCHAR(100) not null,\
@@ -44,7 +94,7 @@ class DbConnection:
           ON UPDATE CASCADE ON DELETE RESTRICT\
         )"
         self.cursor.execute(diary_table_command)
-        print "==> Diaries Table Created successfully"
+        print ("==> Diaries Table Created successfully")
 
 
 #Define Default Version
@@ -53,12 +103,6 @@ default_api_version = 1
 diary_info = {}
 userdata = {}
 home_data = {}
-
-#Connection To DB for CRUD
-conn = psycopg2.connect("dbname = 'andelabootcamp'\
-user='postgres' host='localhost' password='5ure5t@re!' port='5432'")
-conn.autocommit = True
-cur = conn.cursor()
 
 
 @app.route("/api", methods=["GET"])
@@ -89,18 +133,30 @@ def register():
         email = user_info["email"]
         username = user_info["username"]
         password = user_info["password"]
-        #password = generate_password_hash(user_info["password"])
-        #confirm_password = generate_password_hash(user_info["confirm_password"])
         confirm_password = user_info["confirm_password"]
 
         if not firstname or not lastname or not email or not username or not \
         password or not confirm_password:
-            return jsonify({"message": "Error {} - Length Required : All \
-            fields are mandatory". format(411)})
+            return jsonify({"message": "All fields required"}),411
+
+        if not firstname.isalpha():
+            return jsonify({"message" : "invalid firstname"}),422
+        elif not lastname.isalpha():
+            return jsonify({"message" : "invalid lastname"}),422
+
+        if len(firstname) < 2 or len(lastname) < 2:
+            return jsonify({"message" : "Initials not allowed"}),422
+        if len(password) < 6:
+            return jsonify({"message" : "Passwords must be atleast six "
+            "characters"}),422
 
         elif password != confirm_password:
-            return jsonify({"message": "Error {} - Precondition Failed  :\
-            Password and Confirm password not matching". format(412)})
+            return jsonify({"message": "Passwords not matching"}),412
+
+        elif firstname.strip() == '' or lastname.strip() == '' or \
+        email.strip() == '' or username.strip() == '' or \
+        password.strip() == '':
+            return jsonify({"message" : "fields cannot be empty"}),422
 
         # elif username in userdata:
         #     return jsonify({"message": "Error {} - Conflict  : User already \
@@ -111,24 +167,31 @@ def register():
             return jsonify({"message": "{} - Expectation Failed: Email must \
             be valid".format(417)})
 
-        else:
-            try:
-                cur.execute("INSERT INTO users(firstname, lastname, email,\
-                username, password) VALUES('{}','{}','{}','{}','{}')".format(
-                firstname, lastname, email, username, password
-                ))
-                return jsonify({"message": "User Registered Users"}),200
 
-            except Exception as e:
-                return jsonify({"message": "Database error: {}".format(
-                e.message
-                )}),200
+        public_id = str(uuid.uuid4())
+        # register_user = Registration(firstname, lastname, email, username,
+        #  password, public_id)
+        #
+        # if register_user.register(firstname, lastname, email, username,
+        #  password, public_id):
+        #     return jsonify({'message' : 'User Registered!'})
+        # return jsonify({'message' : 'Database error occured!'})
+        try:
+            cur.execute("INSERT INTO users(firstname, lastname, email,\
+            username, password, public_id)\
+             VALUES('{}','{}','{}','{}','{}', '{}')".format(
+            firstname, lastname, email, username, password, public_id
+            ))
+            return jsonify({"message": "User Registered"}),200
+
+        except Exception as e:
+            return jsonify({"message": "User Existing"}),200
 
     return jsonify({"message": "API Version specified unsuported!"})
 
 @app.route("/api/v1/login", methods=["POST"])
 def login():
-    # Assign the API version. Default to V1 or a specified higher
+        # Assign the API version. Default to V1 or a specified higher
     # Route can be set to /api/login
     if request.get_json()["version"]:
         version = request.get_json()["version"]
@@ -145,17 +208,24 @@ def login():
             return jsonify({"message": "Error : Length Required : Both \
             fields are required"}), 411
 
-        cur.execute("SELECT username FROM users \
+        cur.execute("SELECT * FROM users \
         WHERE username='{}' AND password='{}'".format(username, password))
 
-        query_result = cur.fetchone()
+        user = cur.fetchone()
 
-        if not query_result:
-            #keep them guesing which is invalid - for security
-            return jsonify({"message": "Unauthorized: Either username \
-            or password not valid"}),401
-        session['username'] = username
-        return jsonify({"message":"Login successfull"}),200
+        if user:
+            session['username'] = username
+            auth = request.authorization
+            public_id = user[6]
+            token = jwt.encode({'public_id' : public_id,
+            'exp' : datetime.datetime.utcnow() +
+            datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'])
+            return jsonify({"message":"Login successfull",
+            'token': token.decode('UTF-8')}),200
+        #keep them guesing which is invalid - for security
+        return jsonify({"message": "Unauthorized: Either username \
+        or password not valid"}),401
+
 
 
     # logic for the next API Version
@@ -163,7 +233,8 @@ def login():
     return jsonify({"message": "API Version specified unsuported!"})
 
 @app.route("/api/v1/entries", methods=['GET','POST'])
-def entry():
+@token_required
+def entry(user):
 
     if request.method =="POST":
         # Assign the API version. Default to V1 or a specified higher
@@ -183,19 +254,20 @@ def entry():
         #entry_id = str(username) + str(entry_date)
 
         if username not in session['username']:
-            return jsonify({"message": "{} - Unauthorized: Login \
-            required".format(401)})
+            return jsonify({"message": "Login required"}),401
 
         elif not entry or not event_date or not notification_date:
-            return jsonify({"message": "Error {} - Length Required : All \
-            fields are mandatory". format(411)})
+            return jsonify({"message": "All fields required!"})
 
         else:
-            cur.execute("INSERT INTO diary(username, entry, event_date,\
-            entry_date, notification_date) VALUES('{}','{}','{}','{}','{}')".format(
-            username, entry, event_date, entry_date, notification_date
-            ))
-            return jsonify({"message": "Entry inserted!"}),200
+            try:
+                cur.execute("INSERT INTO diary(username, entry, event_date,\
+                entry_date, notification_date) VALUES('{}','{}','{}',\
+                '{}','{}')".format(username, entry, event_date, entry_date,
+                 notification_date))
+                return jsonify({"message": "Entry inserted!"}),200
+            except:
+                return jsonify({"message": "Failed to add entry!"}),200
 
     if request.method =="GET":
         cur.execute("SELECT * FROM diary")
@@ -207,8 +279,11 @@ def entry():
         return jsonify({"message": "Version specified unsuported!"})
 
 @app.route("/api/v1/entry/<int:entry_id>", methods=['PUT','GET', 'DELETE'])
-def entry_actions(entry_id):
+@token_required
+def entry_actions(user, entry_id):
     entry_id = entry_id
+    if not isinstance(entry_id, int):
+        return jsonify({"message": "Id must be an int"})
     if request.method =="PUT":
         # Assign the API version. Default to V1 or a specified higher
         # Route can be set to /api/entry/<int : entry_id>
@@ -233,10 +308,9 @@ def entry_actions(entry_id):
                 entry_id ))
                 return jsonify({"message": "Entry Updated!"}),200
             except Exception as e:
-                return jsonify({"Error Message": e.message} )
+                return jsonify({"Error Message": "Check if entry exists"})
 
-            return jsonify({"message": "{} - Not Found: The entry  \
-            requested not found".format(404)})
+            return jsonify({"message": "Entry not found"})
 
         # PUT logic for the next API Version
 
@@ -246,7 +320,7 @@ def entry_actions(entry_id):
         cur.execute("SELECT * FROM diary WHERE did = {}".format(entry_id))
         query_result = cur.fetchall()
         if not query_result:
-            return jsonify({"message": "Entries not found"}),404
+            return jsonify({"message": "Entry not found"}),404
         return jsonify(query_result),200
 
     if request.method == "DELETE":
@@ -254,15 +328,17 @@ def entry_actions(entry_id):
             cur.execute("DELETE FROM diary WHERE did = {}".format(entry_id))
             return jsonify({"message": "Entry Deleted"}),200
         except:
-            return jsonify({"message": "Entries not found"}),404
+            return jsonify({"message": "Entries not found"}),204
 
 @app.route("/api/logout", methods=['POST'])
 def logout():
     session.pop('username', None)
-    return jsonify({"message": "{} - lOgged out".format(200)})
+    return jsonify({"message": "You're now logged out"}),200
+
+#app.config.from_object(app_config[os.getenv('APP_SETTINGS')])
 
 if __name__=='__main__':
     connection_to_database = DbConnection()
     connection_to_database.create_users_table()
     connection_to_database.create_diary_table()
-    app.run(debug=True)
+    app.run()
