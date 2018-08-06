@@ -14,7 +14,14 @@
     <link href="{{ url_for('static', filename='css/demo.css') }}" rel="stylesheet" >
     <link href="{{ url_for('static', filename='css/component.css') }}" rel="stylesheet" >
     <link href="{{ url_for('static', filename='css/content.css') }}" rel="stylesheet" >
-		<script src="js/modernizr.custom.js"></script>
+		<!-- modernizr js file link -->
+		<script src="{{ url_for('static', filename='js/modernizr.custom.js') }}"></script>
+		<!-- Data table Js and CSS links -->
+
+    <link href="{{ url_for('static', filename='css/dataTable/demo_page.css') }}" rel="stylesheet" >
+		<link href="{{ url_for('static', filename='css/dataTable/demo_table_jui.css') }}" rel="stylesheet" >
+		<link href="{{ url_for('static', filename='css/dataTable/smoothness/jquery-ui-1.8.4.custom.css') }}" rel="stylesheet" >
+		<script type="text/javascript" language="javascript" src="{{ url_for('static', filename='js/dataTable/jquery.dataTables.min.js') }}"></script>
 	</head>
 	<body>
 		<div class="container">
@@ -32,10 +39,12 @@
 									<a class="gn-icon gn-icon-archive">END-POINTS</a>
 									<ul class="gn-submenu">
 										<li><a class="gn-icon gn-icon-article" href="{{url_for('homepage')}}"> Homepage </a></li>
-										<li><a class="gn-icon gn-icon-article" href="{{url_for('register')}}"> Register </a></li>
-										<li><a class="gn-icon gn-icon-article" href="{{url_for('login')}}"> Login </a></li>
-										<li><a class="gn-icon gn-icon-article" href="{{url_for('postcomment')}}"> Post Comment </a></li>
+										<li><a class="gn-icon gn-icon-article" href="{{url_for('api_registration')}}"> API Registration </a></li>
+										<li><a class="gn-icon gn-icon-article" href="{{url_for('diary')}}"> Add Diary Entry </a></li>
+										<li><a class="gn-icon gn-icon-article" href="{{url_for('comments')}}"> All Diary Entries </a></li>
 										<li><a class="gn-icon gn-icon-article" href="{{url_for('comments')}}"> All Comments </a></li>
+										<li><a class="gn-icon gn-icon-article" href="{{url_for('comments')}}"> All Comments </a></li>
+										<li><a class="gn-icon gn-icon-article" href="{{url_for('token')}}"> API Token </a></li>
 									</ul>
 								</li>
 								<li><a class="gn-icon gn-icon-cog">Settings</a></li>
@@ -47,7 +56,8 @@
 					</nav>
 				</li>
 				<li><a href="#">Home</a></li>
-				<li><a class="codrops-icon codrops-icon-prev" href="https://andela.com/"><span>Andela Home</span></a></li>
+				<li><a class="codrops-icon codrops-icon-prev" href="{{url_for('homepage')}}"><span>Diary</span></a></li>
+				<li><a class="codrops-icon codrops-icon-prev" href="https://bootcmpdiary.docs.apiary.io/#" target="_blank"><span>Documentation</span></a></li>
 				<li><a class="codrops-icon codrops-icon-user" href="{{url_for('account')}}"><span> {{session['email']}}</span></a></li>
 			</ul>
 
@@ -58,6 +68,7 @@
 		</div><!-- /container -->
 		<script src="{{ url_for('static', filename='js/gnmenu.js') }}"></script>
 		<script src="{{ url_for('static', filename='js/classie.js') }}"></script>
+		<script src="{{ url_for('static', filename='js/searchapi.js') }}"></script>
 		<script>
 			new gnMenu( document.getElementById( 'gn-menu' ) );
 		</script>

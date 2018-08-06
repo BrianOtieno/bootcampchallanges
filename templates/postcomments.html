@@ -1,9 +1,9 @@
 {% extends "navigation.html" %}
 {% block content %}
 <header>
-  <h1>Comments <span>Drop a comment below :-) </span></h1>
+  <h1>Comments <span>New Diary Entry </span></h1>
 
-<form method="POST" action="/login">
+<form method="POST" action="/postcomment">
   {{ form.hidden_tag() }}
 
 
@@ -14,6 +14,11 @@
 
   <div class="form-group">
     {{ form.comment.label }}
+    {% if form.comment.comment %}
+      {% for error in form.comment.errros %}
+          <div class="error-message"> {{error}} </div>
+      {% endfor %}
+    {% endif %}
     {{ form.comment(cols="150", rows="10") }}
   </div>
   {{ form.submit(class="btn-primary btn-ln") }}

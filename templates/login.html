@@ -1,11 +1,10 @@
 {% extends "general.html" %}
 {% block content %}
-<main class="container signup-section">
-  <div class="section-content">
-    <h2>Sign In To AndelaLevelUp</h2>
+<div class="pushlogin"> <div>
+<main class="account">
+    <h2>Sign In To Diary</h2>
 <form method="POST" action="/login">
   {{ form.hidden_tag() }}
-
 
   <div class="form-group">
     {{ form.email.label }}
@@ -16,14 +15,12 @@
     {{ form.password.label }}
     {{ form.password }}
   </div>
-  {{ form.submitbtn(class="btn-primary btn-ln") }}
+  {{ form.submitbtn(class="btn-blue") }}
 
-</form>
-<br />
+</form><br />
 
-<form method="GET" action="/register">
-  No Account? Sign Up {{ form.signup() }}
-</form>
+  No Account? Sign Up
+  <a href="{{url_for('register')}}" class="btn-grey"> Sign Up </a>
 
 </div>
 </main>

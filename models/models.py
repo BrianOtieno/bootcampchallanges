@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, session
 from werkzeug import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 
@@ -34,10 +34,22 @@ class Comments(db.Model):
     title = db.Column(db.String(100))
     comment = db.Column(db.String())
     username = db.Column(db.String(100))
-    status = db.Column(db.String(20))
 
-    def __init__(self, title, comment, username, status):
+    def __init__(self, title, comment):
         self.title = title.title()
         self.comment = comment.title()
-        self.username = username.title()
-        self.status = status.title()
+        self.username = session['email']
+
+class Diary(db.Model):
+    __tablename__ = 'diary'
+    id = db.Column(db.Integer, primary_key = True)
+    username = db.Column(db.String(100))
+    date = db.Column(db.DateTime())
+    eventname = db.Column(db.String(100))
+    event = db.Column(db.Text())
+
+    def __init__(self, eventname, event, date):
+        self.date = date.title()
+        self.eventname = eventname.title()
+        self.event = event.title()
+        self.username = session['email']

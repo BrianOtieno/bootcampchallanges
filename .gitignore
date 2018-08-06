@@ -1,0 +1,6 @@
+#All files with .pyc extentions
+*.pyc
+
+#venv folder
+
+venv/

@@ -9,5 +9,56 @@
 
   To include Data Table populated with all posts, Ajax populated
 </header>
-
+<div id="dynamic">
+            <!-- start data table here-->
+            <table cellpadding="0" cellspacing="0" class="displayGrid" id="dealList"  style="width: 100%">
+                <thead>
+                    <tr>
+                        <th width="60px" > id</th>
+                        <th>title</th>
+                        <th>comment</th>
+                        <th>username</th>
+                        <th width="80px">edit</th>
+                        <th width="80px">delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+</div>
+<!--end datatable-->
 {% endblock %}
+
+<script>
+
+ $(document).ready(function() {
+        oTable = $('#dealList').dataTable({
+    });
+
+    function deleteRecord(id) {
+            var r = confirm("Are You Sure To You To Delete Records?");
+            if (r === true) {
+                $.ajax({
+                    type: "POST",
+                    url: "<?= base_url('index.php/pmc/delete_bycountryrecruitments'); ?>",
+                    data: {recruitment_id: id},
+                    beforeSend: function() {
+                        $('#wait').html("Wait for checking");
+                    },
+                    success: function(resp) {
+                        var obj = jQuery.parseJSON(resp);
+                        if (obj.success === 1) {
+                            $('#errorMessage').show();
+                            $(".msgDisplay").html(obj.msg);
+                            alert('Deleted Successfully!');
+                        } else {
+                            $('#errorMessage').show();
+                            $(".msgDisplay").html(obj.msg);
+                            alert('Error:  Try Again!');
+                        }
+                        oTable.fnDraw();
+                    }
+                });
+            }
+        }
+</script>

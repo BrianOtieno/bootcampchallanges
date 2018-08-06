@@ -1,0 +1,25 @@
+{% extends "navigation.html" %}
+
+{% block content %}
+
+<header>
+  <h1>LOGIN TO ACCESS TOKEN <span>Users can drop a comment here</span></h1>
+  <form method="POST" action="/token">
+    {{ form.hidden_tag() }}
+
+    <div class="form-group">
+      {{ form.username.label }}
+      {{ form.username }}
+    </div>
+
+    <div class="form-group">
+      {{ form.password.label }}
+      {{ form.password }}
+    </div>
+    {{ form.submitbtn(class="btn-blue") }}
+
+  </form><br />
+
+</header>
+
+{% endblock %}
